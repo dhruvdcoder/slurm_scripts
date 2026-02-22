@@ -126,6 +126,7 @@ def main(cfg: DictConfig) -> None:
         f"job_name={job_name}",
         f"job_type={cfg.train.job_type}",
         f"experiment={cfg.train.experiment}",
+        f"loggers={cfg.train.loggers}",
     ]
 
     debug = cfg.train.get("debug")

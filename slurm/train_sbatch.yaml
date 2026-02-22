@@ -61,6 +61,7 @@ train:
   devices: ${parse_gpu_count:${slurm.gres}}
   hooks: false
   trainer_strategy: ${determine_trainer_strategy:${slurm.ntasks_per_node},${slurm.nodes},${.hooks}}
+  loggers: wandb
 
 do: print # submit
 job_name: ???

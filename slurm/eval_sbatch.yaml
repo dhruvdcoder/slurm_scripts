@@ -1,0 +1,70 @@
+defaults:
+  - _self_
+  - paths: default
+  - hardware: 1_node_1_gpu
+
+# Keep common utils
+hydra:
+  job:
+    env_set:
+      PROJECT_ROOT: "."
+      OMP_NUM_THREADS: "1"
+  searchpath:
+    - file://${oc.env:PROJECT_ROOT,.}/configs/common
+  # output directory for the sbatch generation script submit_train.py etc.
+  run:
+    dir: ${paths.output_dir}/sbatch/${now:%Y-%m-%d}_${now:%H-%M-%S}
+  sweep:
+    dir: ${paths.output_dir}/sbatch/${now:%Y-%m-%d}_${now:%H-%M-%S}
+    subdir: ${oc.select:hydra.job.num,0}
+
+
+# SLURM settings
+slurm:
+  # output file is set by the script typically to paths.logs_dir/%x.out
+  job_name: ${job_name}
+  nodes: 1
+  mem: 20GB
+  time: "2-00:00:00"
+  partition: gpu
+  constraint: vram40,bf16
+  ntasks_per_node: 1 
+  cpus_per_task: 5
+  gres: gpu:1 
+  open_mode: append
+  requeue: true
+  mail_type: 
+    - BEGIN
+    - END
+    - FAIL
+    - REQUEUE
+    - TIME_LIMIT_80
+  mail_user: ${oc.env:USER,dhruveshpate@umass.edu}
+
+# Environment variables
+env:
+  HYDRA_FULL_ERROR: 1
+  NCCL_NSOCKS_PERTHREAD: 4
+  NCCL_SOCKET_NTHREADS: 2
+  TORCH_LOGS: recompiles
+  TQDM_MINITERS: 1000
+
+# Evaluation configuration
+eval:
+  debug: null
+  batch_size: 64 # both global and per device batch size, assuming single device
+  compile: false
+  precision: 32-true # sample in 32-bit precision
+  job_type: eval
+  eval_type: default
+  checkpoint_path: ???
+  num_examples: 1000
+  split: test
+  dms_to_remove: 
+    - val.lm
+    - test.lm
+
+do: print # submit
+job_name: ???
+experiment: ???
+use_job_name_as_id: false # no resume support

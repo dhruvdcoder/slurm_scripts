@@ -21,6 +21,7 @@ import hydra
 from omegaconf import DictConfig
 from simple_slurm import Slurm
 import omegaconf
+from hydra.core.plugins import Plugins
 
 
 # steal the raw args before Hydra’s decorator runs
@@ -43,6 +44,7 @@ _HYDRA_PARAMS = {
     "config_name": "train_sbatch",
 }
 from searchpath_plugin import HydraCommonSearchPathPlugin
+Plugins.instance().register(HydraCommonSearchPathPlugin)
 
 # resolvers
 def _parse_gpu_count(gres: str) -> int:

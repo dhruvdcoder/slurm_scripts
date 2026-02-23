@@ -24,4 +24,3 @@ class HydraCommonSearchPathPlugin(SearchPathPlugin):
         )
 
 
-Plugins.instance().register(HydraCommonSearchPathPlugin)

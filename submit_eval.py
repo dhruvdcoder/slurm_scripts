@@ -18,7 +18,9 @@ import hydra
 from omegaconf import DictConfig
 from simple_slurm import Slurm
 import omegaconf
-from common import steal_args
+from common import steal_args, remove_dms
+from hydra.core.plugins import Plugins
+from searchpath_plugin import HydraCommonSearchPathPlugin
 
 # steal the raw args before Hydra’s decorator runs
 INNER_ARGS, OUTER_ARGS = steal_args()
@@ -26,9 +28,10 @@ INNER_ARGS, OUTER_ARGS = steal_args()
 # Hydra configuration parameters
 _HYDRA_PARAMS = {
     "version_base": "1.3",
-    "config_path": str(Path("../configs") / "slurm"),
+    "config_path": str(Path(__file__).parent / "slurm"),
     "config_name": "eval_sbatch.yaml",
 }
+Plugins.instance().register(HydraCommonSearchPathPlugin)
 
 
 
@@ -79,10 +82,10 @@ def main(cfg: DictConfig) -> None:
         f"+tags.eval_type={cfg.eval.eval_type}",
         f"+tags.checkpoint={Path(checkpoint_path).stem}",
     ]
-    remove_dms = remove_dms(cfg)
+    _remove_dms = remove_dms(cfg)
     # add things like `~datamodule.dataset_managers.val.lm` to the command
-    if remove_dms:
-        cmd += remove_dms
+    if _remove_dms:
+        cmd += _remove_dms
 
 
     if INNER_ARGS:

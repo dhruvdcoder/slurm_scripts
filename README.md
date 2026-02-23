@@ -21,6 +21,12 @@ The base training config is located in `slurm/train_sbatch`. It has two main sec
 You can pass additional arguments (the ones that are not exposed by `train.` of train_sbatch.yaml) to the inner `xlm job_type=train` command by adding them after `---` in the command line.
 Having `---` is optional.
 
+> [!NOTE]
+> Make sure to use login node to submit the job and not the terminal of your editor which might be running on a compute node.
+
+> [!NOTE]
+> Make sure that you have activated the virtual environment in the terminal from which you are submitting the job before you submit the job.
+
 ### Example 1: Basic usage with additional overrides
 Running this 
 ```bash

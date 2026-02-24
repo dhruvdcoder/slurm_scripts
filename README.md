@@ -30,7 +30,20 @@ Having `---` is optional.
 ### Example 1: Basic usage with additional overrides
 Running this 
 ```bash
-python slurm_scripts/submit_train.py "do=submit" "job_name=star_easy_idlm" "train.experiment=star_easy_idlm" "train.batch_size=64" "train.compile=false" "train.compile=true" "train.precision=bf16-mixed" "hardware=1_node_1_gpu" "slurm.constraint=\"vram80,bf16,ib\"" "++slurm.exclude=gpu016" "++use_job_name_as_id=false" --- "trainer.max_steps=1000"
+python slurm_scripts/submit_train.py \
+"do=submit" \
+"job_name=star_easy_idlm" \
+"train.experiment=star_easy_idlm" \
+"train.batch_size=64" \
+"train.compile=false" \
+"train.compile=true" \
+"train.precision=bf16-mixed" \
+"hardware=1_node_1_gpu" \
+"slurm.constraint=\"vram80,bf16,ib\"" \
+"++slurm.exclude=gpu016" \
+"++use_job_name_as_id=false" \
+--- \
+"trainer.max_steps=1000"
 ```
 
 will generate the following sbatch script. If you have not made changes to the default path settings then you will find the generated `sbatch.sh` in `logs/star_easy_idlm/sbatch/<datetime>/sbatch.sh`. The slurm logs will be stored in `logs/star_easy_idlm/sbatch/<datetime>/<job_name>.out` as shown in the sbatch script below.

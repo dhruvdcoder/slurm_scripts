@@ -2,6 +2,8 @@
 import sys
 from typing import List
 
+import omegaconf
+
 
 def steal_args():
     RAW_ARGS = sys.argv[1:]
@@ -22,3 +24,11 @@ def remove_dms(cfg) -> List[str]:
     for dm in dms_to_remove:
         remove_strs.append(f"~datamodule.dataset_managers.{dm}")
     return remove_strs
+
+def get_experiment_string(inner_cfg) -> str:
+    experiment_value = inner_cfg.experiment
+    if omegaconf.OmegaConf.is_list(experiment_value):
+        experiment = f"[{','.join(experiment_value)}]"
+    else:
+        experiment = str(experiment_value)
+    return experiment

@@ -21,6 +21,7 @@ import hydra
 from omegaconf import DictConfig
 from simple_slurm import Slurm
 import omegaconf
+from common import get_experiment_string
 from hydra.core.plugins import Plugins
 
 
@@ -123,11 +124,12 @@ def main(cfg: DictConfig) -> None:
     # )
 
     # Main training command with srun
+    experiment = get_experiment_string(cfg.train)
     cmd = [
         "xlm",
         f"job_name={job_name}",
         f"job_type={cfg.train.job_type}",
-        f"experiment={cfg.train.experiment}",
+        f"experiment={experiment}",
         f"loggers={cfg.train.loggers}",
     ]
 

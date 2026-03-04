@@ -76,3 +76,62 @@ srun xlm job_name=star_easy_idlm job_type=train experiment=star_easy_idlm logger
 
 ### Example 2: Just print the sbatch script
 You can just print the sbatch script by changing `do=submit` to `do=print` in the command line.
+
+## Evaluation
+
+The base config is `slurm/eval_sbatch.yaml` with `eval.` and `slurm.` sections. Arguments after `---` are passed to the inner `xlm job_type=eval` command.
+Key outer args: `job_name`, `experiment`, `eval.checkpoint_path`, `eval.split`, `eval.dms_to_remove`.
+
+### Example 1: Standard MLM eval (e.g. sudoku with predictor params)
+
+```bash
+python lib/slurm_scripts/submit_eval.py \
+  "do=submit" \
+  "job_name=sudoku_extreme_mlm_eval_top_prob_0.5" \
+  "experiment=sudoku_extreme_mlm" \
+  "slurm.constraint=vram80" \
+  "slurm.partition=\"gpu,gpu-preempt,superpod-a100\"" \
+  "eval.split=validation" \
+  "eval.dms_to_remove=[val.lm]" \
+  "eval.checkpoint_path=logs/sudoku_extreme_mlm/checkpoints/10-80000.ckpt" \
+  "paths.log_dir=logs/eval" \
+  --- \
+  ++predictor.confidence=top_prob \
+  predictor.max_steps=81 \
+  ++predictor.top_k=1 \
+  ++predictor.top_p=null \
+  ++predictor.threshold=0.5
+```
+
+### Example 2: NLL eval (generative perplexity, unconditional prediction)
+
+For NLL eval with a generative-perplexity evaluator (e.g. gpt2-large), use a list for `experiment` where the second element is a config name like `gpt2_generative_perplexity`.
+
+```bash
+python lib/slurm_scripts/submit_eval.py \
+  "do=submit" \
+  "job_name=lm1b_pgdd_mlm_gpt2_gp_1-100000_nll" \
+  "experiment=[lm1b_pgdd_mlm,gpt2_generative_perplexity]" \
+  "eval.checkpoint_path=logs/lm1b_pgdd_mlm/checkpoints/1-100000.ckpt" \
+  "eval.dms_to_remove=[val.lm]" \
+  "paths.log_dir=logs/eval" \
+  --- \
+  per_device_batch_size=64 \
+  global_batch_size=64 \
+  +tags.eval_type=nll \
+  +tags.checkpoint=1-100000 \
+  datamodule.dataset_managers.val.unconditional_prediction.num_examples=1000
+```
+
+### Common INNER_ARGS quick reference
+
+- **Predictor (MLM)**: `++predictor.confidence=top_prob` `++predictor.threshold=0.5` `++predictor.top_k=1` `++predictor.top_p=null` `predictor.max_steps=81`
+- **Batch size**: `per_device_batch_size=64` `global_batch_size=64`
+- **Wandb tags**: `+tags.eval_type=nll` `+tags.checkpoint=1-100000`
+- **Unconditional prediction**: `datamodule.dataset_managers.val.unconditional_prediction.num_examples=1000`
+- **Misc**: `trainer.limit_val_batches=null` `paths.log_dir=logs/eval`
+
+### dms_to_remove patterns
+
+- Standard eval (skip LM metrics): `eval.dms_to_remove=[val.lm]` or `[val.lm, test.lm]` (default)
+- NLL infill (skip unconditional pred): `eval.dms_to_remove=[val.unconditional_prediction]`

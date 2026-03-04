@@ -18,7 +18,7 @@ import hydra
 from omegaconf import DictConfig
 from simple_slurm import Slurm
 import omegaconf
-from common import steal_args, remove_dms
+from common import steal_args, remove_dms, get_experiment_string
 from hydra.core.plugins import Plugins
 from searchpath_plugin import HydraCommonSearchPathPlugin
 
@@ -62,7 +62,7 @@ def main(cfg: DictConfig) -> None:
     # Set environment variables using slurm.add_cmd
     for key, value in cfg.env.items():
         slurm.add_cmd(f"export {key}={value}")
-    experiment = str(cfg.experiment)
+    experiment = get_experiment_string(cfg)
     checkpoint_path = str(cfg.eval.checkpoint_path)
     # Main training command with srun
     cmd = [
@@ -72,15 +72,11 @@ def main(cfg: DictConfig) -> None:
         f"experiment={experiment}",
         f"++eval.checkpoint_path={checkpoint_path}",
         f"++eval.split={cfg.eval.get('split', 'validation')}",
-        f"per_device_batch_size={cfg.eval.batch_size}",
-        f"global_batch_size={cfg.eval.batch_size}",
         "trainer_strategy=single_device",
         f"++trainer.precision={cfg.eval.precision}",  # sample in 32-bit precision
         "compile=false",
         "+loggers.wandb.resume=allow",
         f"+loggers.wandb.id={job_name if cfg.get('use_job_name_as_id', True) else 'null'}",
-        f"+tags.eval_type={cfg.eval.eval_type}",
-        f"+tags.checkpoint={Path(checkpoint_path).stem}",
     ]
     _remove_dms = remove_dms(cfg)
     # add things like `~datamodule.dataset_managers.val.lm` to the command

@@ -33,13 +33,8 @@ slurm:
   gres: gpu:1 
   open_mode: append
   requeue: true
-  mail_type: 
-    - BEGIN
-    - END
-    - FAIL
-    - REQUEUE
-    - TIME_LIMIT_80
-  mail_user: ${oc.env:USER,dhruveshpate@umass.edu}
+  mail_type: ~
+  mail_user: ~
 
 # Environment variables
 env:

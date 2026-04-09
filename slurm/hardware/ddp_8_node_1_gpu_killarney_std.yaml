@@ -1,0 +1,16 @@
+# @package _global_
+# Eight nodes, one L40S-48GB GPU per node — Killarney standard tier (killarney.alliancecan.ca)
+# Equivalent to 8 total L40S GPUs; nodes drawn from the 168-node pool individually,
+# so the scheduler can backfill 1 GPU at a time from mix-state nodes — much faster allocation
+# than ddp_2_node_4_gpu_killarney_std which needs 4 free GPUs on each of 2 nodes simultaneously.
+# Account: aip-rudner (Vector Institute AIP-type RAP; prefix aip- required on Killarney)
+
+slurm:
+  nodes: 8
+  gres: gpu:l40s:1
+  ntasks_per_node: 1
+  constraint: ~     # clears the Unity-specific vram40,bf16 constraint from train_sbatch.yaml
+  partition: ~      # no partition flag needed; scheduler routes via --gres and --account
+  account: aip-rudner
+  time: 7-00:00:00
+  mem: 50G          # 1 GPU per node → scale memory down from 200G proportionally

@@ -1,0 +1,14 @@
+# @package _global_
+# Two nodes, four L40S-48GB GPUs per node — Killarney standard tier (killarney.alliancecan.ca)
+# Killarney standard: 168 nodes × 4 L40S-48GB (672 GPUs total); HDR100 InfiniBand
+# Account: aip-ttz-990 (Vector Institute AIP-type RAP; prefix aip- required on Killarney)
+
+slurm:
+  nodes: 2
+  gres: gpu:l40s:4
+  ntasks_per_node: 4
+  constraint: ~     # clears the Unity-specific vram40,bf16 constraint from train_sbatch.yaml
+  partition: ~      # no partition flag needed; scheduler routes via --gres and --account
+  account: aip-ttz-990
+  time: 7-00:00:00
+  mem: 200G

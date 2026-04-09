@@ -1,0 +1,15 @@
+# @package _global_
+# Two nodes, four A100-40GB GPUs per node — Narval cluster (narval.alliancecan.ca)
+# Narval has ~159 GPU nodes with 4 A100-40GB each (636 GPUs total); max job time: 7 days
+# Note: A100-40GB has half the VRAM of H100-80GB; use Fir if VRAM headroom is needed
+# Account: verify with `mybalance` on the cluster; rrg- prefix for RAC grants
+
+slurm:
+  nodes: 2
+  gres: gpu:a100:4
+  ntasks_per_node: 4
+  constraint: ~     # clears the Unity-specific vram40,bf16 constraint from train_sbatch.yaml
+  partition: ~      # no partition flag needed; scheduler routes via --gres and --account
+  account: rrg-ttz-990
+  time: 7-00:00:00
+  mem: 200G

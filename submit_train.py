@@ -49,11 +49,10 @@ Plugins.instance().register(HydraCommonSearchPathPlugin)
 
 # resolvers
 def _parse_gpu_count(gres: str) -> int:
-    # pattern: gpu:4
-    match = re.search(r"gpu:(\d+)", gres)
+    # Handles gpu:4, gpu:h100:4, gpu:a100:4, gpu:l40s:4, etc.
+    match = re.search(r"gpu:(?:[^:]+:)?(\d+)", gres)
     if match:
         return int(match.group(1))
-    # add other patterns here
     raise ValueError(f"Invalid gres: {gres}")
 
 

@@ -1,0 +1,16 @@
+# @package _global_
+# One node, eight H100-80GB SXM GPUs per node — Killarney performance tier (killarney.alliancecan.ca)
+# Killarney performance: only 10 nodes × 8 H100-80GB (80 GPUs total); 2×HDR200 InfiniBand
+# Equivalent GPU count to the original Unity ddp_1_node_8_gpu config
+# Account: aip-ttz-990 (Vector Institute AIP-type RAP; prefix aip- required on Killarney)
+# Note: high contention — expect longer queue wait times than standard tier
+
+slurm:
+  nodes: 1
+  gres: gpu:h100:8
+  ntasks_per_node: 8
+  constraint: ~     # clears the Unity-specific vram40,bf16 constraint from train_sbatch.yaml
+  partition: ~      # no partition flag needed; scheduler routes via --gres and --account
+  account: aip-ttz-990
+  time: 7-00:00:00
+  mem: 200G

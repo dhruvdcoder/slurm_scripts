@@ -19,6 +19,11 @@ import re
 from typing import Dict, cast
 import hydra
 from omegaconf import DictConfig
+
+# simple_slurm parses SQUEUE_FORMAT at import time; Alliance/Killarney sets it
+# to a non-CSV format that simple_slurm can't handle, so we clear it first.
+os.environ.pop("SQUEUE_FORMAT", None)
+
 from simple_slurm import Slurm
 import omegaconf
 from common import get_experiment_string
@@ -100,6 +105,9 @@ def main(cfg: DictConfig) -> None:
     slurm_config = cast(
         Dict, omegaconf.OmegaConf.to_container(cfg.slurm, resolve=True)
     )
+    # simple_slurm emits "None" as a literal string rather than omitting the
+    # flag, so filter out any null/None values before building the Slurm object.
+    slurm_config = {k: v for k, v in slurm_config.items() if v is not None}
     slurm_config["output"] = str(slurm_output_file)
     # Configure SLURM settings from config
     slurm = Slurm(**slurm_config)

@@ -9,6 +9,6 @@ slurm:
   ntasks_per_node: 4
   constraint: ~     # clears the Unity-specific vram40,bf16 constraint from train_sbatch.yaml
   partition: ~      # no partition flag needed; scheduler routes via --gres and --account
-  account: aip-ttz-990
+  account: aip-rudner
   time: 7-00:00:00
   mem: 200G

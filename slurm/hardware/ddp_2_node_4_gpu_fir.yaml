@@ -11,4 +11,20 @@ slurm:
   partition: ~      # no partition flag needed; scheduler routes via --gres and --account
   account: rrg-rudner
   time: 7-00:00:00
-  mem: 32G
+  mem: 64G
+
+# Fir-specific NCCL settings.
+# IB is disabled: fc10105 and fc10107 (and possibly others) have broken IB
+# (Verbs connection establishment hangs for 1800s). NCCL falls back to TCP.
+# Re-enable (NCCL_IB_DISABLE: 0, NCCL_IB_HCA: mlx5_2,mlx5_3,mlx5_4,mlx5_5)
+# once Alliance fixes the broken nodes and IB is confirmed stable.
+env:
+  NCCL_IB_DISABLE: 1
+
+# Pre-commands run at the top of the sbatch script, before env exports and srun.
+# - cuda/12.6:    CUDA toolkit for Triton kernel compilation (highest available on Fir)
+# - arrow/23.0.1: PyArrow is sourced from this module (venv uses --system-site-packages)
+# - gcc/12.3:     explicit pin to avoid accidental default change
+pre_cmd:
+  - "module load StdEnv/2023 gcc/12.3 cuda/12.6 arrow/23.0.1"
+  - "source .venv-double-backprop/bin/activate"

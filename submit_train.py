@@ -6,7 +6,7 @@ from pathlib import Path
 import dotenv
 
 # Load from project root (parent of xlm-core) so it works regardless of cwd
-_project_root = Path(__file__).resolve().parent.parent.parent
+_project_root = Path(__file__).resolve().parent.parent
 dotenv.load_dotenv(_project_root / ".env", override=True)
 found_secrets = dotenv.load_dotenv(_project_root / ".secrets.env", override=True)
 if not found_secrets:
@@ -112,6 +112,10 @@ def main(cfg: DictConfig) -> None:
     # Configure SLURM settings from config
     slurm = Slurm(**slurm_config)
     # add job_name
+
+    # Emit pre-commands (module loads, venv activation, etc.) before env exports
+    for cmd in cfg.get("pre_cmd", []):
+        slurm.add_cmd(cmd)
 
     # Set environment variables using slurm.add_cmd
     for key, value in cfg.env.items():

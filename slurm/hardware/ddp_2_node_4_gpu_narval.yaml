@@ -12,3 +12,13 @@ slurm:
   account: rrg-rudner
   time: 7-00:00:00
   mem: 32G
+
+# Pre-commands run at the top of the sbatch script, before env exports and srun.
+# Same idea as Fir (ddp_2_node_4_gpu_fir.yaml): gcc + CUDA toolkit so Inductor/Triton can
+# find nvcc when torch.compile is enabled; Arrow for venvs that use --system-site-packages.
+# Narval shares the Alliance Gentoo2023 module stack; cuda/12.6 matches typical PyTorch 2.11
+# +computecanada builds. If module load fails, run ``module spider cuda`` on Narval and pin
+# the highest 12.x you see there, or ask Alliance support.
+pre_cmd:
+  - "module load StdEnv/2023 gcc/12.3 cuda/12.6 arrow/23.0.1"
+  - "source .venv-double-backprop/bin/activate"

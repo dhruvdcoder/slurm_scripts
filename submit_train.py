@@ -141,10 +141,11 @@ def main(cfg: DictConfig) -> None:
         f"trainer_strategy={cfg.train.trainer_strategy}",
         f"trainer.devices={cfg.train.devices}",
         f"trainer.num_nodes={cfg.train.num_nodes}",
-        f"++trainer.precision={cfg.train.precision}",
         f"compile={cfg.train.compile}",
         "+loggers.wandb.resume=allow",
     ]
+    if cfg.train.trainer_strategy != "fsdp":
+        cmd += [f"++trainer.precision={cfg.train.precision}"]
     wandb_id = False
     for inner_arg in INNER_ARGS:
         if "wandb.id" in inner_arg:

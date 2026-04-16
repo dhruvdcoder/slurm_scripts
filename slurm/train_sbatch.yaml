@@ -2,6 +2,7 @@ defaults:
   - _self_
   - paths: default
   - hardware: null
+  - env: default
 
 # Keep common utils
 hydra:
@@ -78,6 +79,7 @@ train:
   hooks: false
   trainer_strategy: ${determine_trainer_strategy:${slurm.ntasks_per_node},${slurm.nodes},${.hooks}}
   loggers: wandb
+  dms_to_remove: []
 
 do: print # submit
 job_name: ???

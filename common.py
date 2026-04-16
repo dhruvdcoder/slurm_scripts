@@ -18,8 +18,8 @@ def steal_args():
     sys.argv = [sys.argv[0]] + OUTER_ARGS
     return INNER_ARGS, OUTER_ARGS
 
-def remove_dms(cfg) -> List[str]:
-    dms_to_remove = cfg.eval.get("dms_to_remove", [])
+def remove_dms(cfg, eval_or_train: str = "eval") -> List[str]:
+    dms_to_remove = cfg.get(f"{eval_or_train}.dms_to_remove", [])
     remove_strs = []
     for dm in dms_to_remove:
         remove_strs.append(f"~datamodule.dataset_managers.{dm}")

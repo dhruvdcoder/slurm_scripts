@@ -1,0 +1,18 @@
+defaults:
+  - default
+# # --- Distributed / NCCL debugging (pinpoint collective source + faster hang detection) ---
+# # PyTorch: verbose distributed logging (collectives, PG init, etc.). VERY VERBOSE. ONLY USE FOR SHORT DEBUG SESSIONS.
+# TORCH_DISTRIBUTED_DEBUG: DETAIL
+# # NCCL watchdog timeout in seconds (default is 1800 = 30 min). Lower = fail faster on deadlocks.
+# # 600s (10 min) balances fast feedback vs slow legitimate collectives on IB; raise if you see spurious timeouts.
+TORCH_NCCL_HEARTBEAT_TIMEOUT_SEC: 3000
+# # Flight recorder: stack traces for NCCL work (enables "Stack trace of the failed collective" dumps)
+TORCH_NCCL_TRACE_BUFFER_SIZE: 16777216
+# # Extra dumps / desync reports on timeout or mismatch (noisy; disable for production throughput)
+# TORCH_NCCL_DUMP_ON_TIMEOUT: 1
+TORCH_NCCL_DESYNC_DEBUG: 1
+TORCH_NCCL_TRACE_CPP_STACK: 1
+TORCH_NCCL_ASYNC_ERROR_HANDLING: 1
+# NCCL library logging (not Python stacks; useful for transport/COLL ordering)
+NCCL_DEBUG: INFO
+NCCL_DEBUG_SUBSYS: COLL

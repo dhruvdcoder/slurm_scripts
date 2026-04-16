@@ -21,7 +21,7 @@ import hydra
 from omegaconf import DictConfig
 from simple_slurm import Slurm
 import omegaconf
-from common import get_experiment_string
+from common import get_experiment_string, remove_dms
 from hydra.core.plugins import Plugins
 
 
@@ -145,7 +145,11 @@ def main(cfg: DictConfig) -> None:
         "+loggers.wandb.resume=allow",
     ]
     if cfg.train.trainer_strategy != "fsdp":
+        # fsdp does its own precision handling
         cmd += [f"++trainer.precision={cfg.train.precision}"]
+    _remove_dms = remove_dms(cfg, "train")
+    if _remove_dms:
+        cmd += _remove_dms
     wandb_id = False
     for inner_arg in INNER_ARGS:
         if "wandb.id" in inner_arg:

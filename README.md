@@ -105,7 +105,7 @@ python lib/slurm_scripts/submit_eval.py \
 
 ### Example 2: NLL eval (generative perplexity, unconditional prediction)
 
-For NLL eval with a generative-perplexity evaluator (e.g. gpt2-large), use a list for `experiment` where the second element is a config name like `gpt2_generative_perplexity`.
+For NLL eval with **generative perplexity as post-hoc** (judge LM over logged `text`, packaged as `gpt2_generative_perplexity`), use a list for `experiment` where the second element is that config name. With `submit_seq2seq_eval.py`, set **`eval.post_hoc_experiment=gpt2_generative_perplexity`** instead of the old `eval.generative_perplexity` field.
 
 ```bash
 python lib/slurm_scripts/submit_eval.py \
@@ -135,3 +135,28 @@ python lib/slurm_scripts/submit_eval.py \
 
 - Standard eval (skip LM metrics): `eval.dms_to_remove=[val.lm]` or `[val.lm, test.lm]` (default)
 - NLL infill (skip unconditional pred): `eval.dms_to_remove=[val.unconditional_prediction]`
+
+## Batch push to Hub
+
+Config: [`slurm/push_checkpoints_sbatch.yaml`](slurm/push_checkpoints_sbatch.yaml). Script: [`submit_push_checkpoints.py`](submit_push_checkpoints.py).
+
+For each matching checkpoint under `push_checkpoints.checkpoints_dir`, the generated sbatch runs **`xlm-push-to-hub`** with `hub.branch=step-{global_step}` parsed from filenames like `44-500000.ckpt` (regex configurable). `best.ckpt` / `last.ckpt` are skipped unless `push_checkpoints.include_special_named=true` (then branches `step-best` / `step-last`).
+
+- **`push_checkpoints.weight_source=lightning_ckpt`** (default): passes `++hub_checkpoint_path=...` (single Lightning checkpoint **file**).
+- **`push_checkpoints.weight_source=model_only`**: passes `++model_only_checkpoint_path=...` and `+skip_init_weights=True` (e.g. `.safetensors` or `model.safetensors.index.json`); override `checkpoint_glob` / `filename_pattern` as needed.
+
+Set **`HF_HUB_KEY`**, **`HF_TOKEN`**, or **`HUGGINGFACE_HUB_TOKEN`** in the environment before submit; the generated sbatch exports whichever are present (compute nodes often have no `huggingface-cli` cache). Unauthenticated Hub calls may return **404** that looks like a missing repo.
+
+### Example
+
+```bash
+python lib/slurm_scripts/submit_push_checkpoints.py \
+  do=submit \
+  job_name=push_owt_mlm_ckpts \
+  experiment=owt_mlm \
+  push_checkpoints.checkpoints_dir=/project/pi_mccallum_umass_edu/dhruveshpate_umass_edu/xlm-models/owt_mlm/checkpoints \
+  push_checkpoints.hub_repo_id=dhruveshpatel/mlm-owt \
+  hardware=1_node_1_gpu
+```
+
+Use `do=print` to print the sbatch without submitting.

@@ -19,6 +19,10 @@ import re
 from typing import Dict, cast
 import hydra
 from omegaconf import DictConfig
+
+# Shell RC files often set SQUEUE_FORMAT for human-readable `squeue`; simple_slurm
+# expects CSV and crashes on import if this env var is present.
+os.environ.pop("SQUEUE_FORMAT", None)
 from simple_slurm import Slurm
 import omegaconf
 from common import get_experiment_string, remove_dms
@@ -114,6 +118,25 @@ def main(cfg: DictConfig) -> None:
         val = os.environ.get(key)
         if val:
             slurm.add_cmd(f"export {key}={shlex.quote(val)}")
+    # Training/runtime vars from .env (avoid Hydra ++env overrides for values with ';')
+    for key in (
+        "PROJECT_ROOT",
+        "XLM_MODELS_PACKAGES",
+        "CFLEXMDM_CUDA_ARCH",
+        "EILM_CUDA_ARCH",
+        "CUDA_HOME",
+    ):
+        val = os.environ.get(key)
+        if val:
+            slurm.add_cmd(f"export {key}={shlex.quote(val)}")
+    cuda_home = os.environ.get("CUDA_HOME")
+    if cuda_home:
+        # Bake the submit-time PATH (must include the activated venv's bin/)
+        # into the script. simple_slurm escapes `$PATH` to `\$PATH`, which
+        # would leave a literal dollar sign and wipe the inherited venv path.
+        slurm.add_cmd(
+            f"export PATH={shlex.quote(cuda_home + '/bin')}:{shlex.quote(os.environ.get('PATH', ''))}"
+        )
 
     # Get wandb job ID from command line args or use SLURM_JOB_NAME
     job_name = cfg.job_name

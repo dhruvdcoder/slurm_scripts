@@ -11,11 +11,14 @@ if not found_secrets:
 # fmt: on
 
 import shlex
+import os
 from typing import Dict
 from pathlib import Path
 from typing import cast
 import hydra
 from omegaconf import DictConfig
+
+os.environ.pop("SQUEUE_FORMAT", None)
 from simple_slurm import Slurm
 import omegaconf
 from common import steal_args, remove_dms, get_experiment_string

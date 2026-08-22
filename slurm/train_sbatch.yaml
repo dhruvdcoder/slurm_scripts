@@ -49,6 +49,9 @@ env:
   NCCL_SOCKET_NTHREADS: 2
   TORCH_LOGS: recompiles
   TQDM_MINITERS: 1000
+  # Reduce CUDA allocator fragmentation on long FSDP runs (large transient
+  # (G, J, V) log-prob slabs in EILM shaping).
+  PYTORCH_CUDA_ALLOC_CONF: expandable_segments:True
   # # --- Distributed / NCCL debugging (pinpoint collective source + faster hang detection) ---
   # # PyTorch: verbose distributed logging (collectives, PG init, etc.)
   # TORCH_DISTRIBUTED_DEBUG: DETAIL

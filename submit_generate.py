@@ -1,18 +1,20 @@
 #!/usr/bin/env python3
 import shlex
 import sys
+import os
 from typing import Dict, List
 import re
 from pathlib import Path
 from typing import cast
 import hydra
 from omegaconf import DictConfig
+
+os.environ.pop("SQUEUE_FORMAT", None)
 from simple_slurm import Slurm
 import omegaconf
 import subprocess
 import json
 import tempfile
-import os
 import traceback
 
 # steal the raw args before Hydra's decorator runs

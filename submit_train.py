@@ -122,9 +122,11 @@ def main(cfg: DictConfig) -> None:
     for key in (
         "PROJECT_ROOT",
         "XLM_MODELS_PACKAGES",
+        "FLEXMDM_CRF_CUDA_ARCH",
         "CFLEXMDM_CUDA_ARCH",
         "EILM_CUDA_ARCH",
         "CUDA_HOME",
+        "IWSLT14_RDM_TEXT_ROOT",
     ):
         val = os.environ.get(key)
         if val:

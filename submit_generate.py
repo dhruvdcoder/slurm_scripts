@@ -2,13 +2,16 @@
 import shlex
 import sys
 from typing import Dict, List
-import re
 from pathlib import Path
-from typing import cast
 import hydra
 from omegaconf import DictConfig
 from simple_slurm import Slurm
 import omegaconf
+from common import (
+    register_gpu_count_resolver,
+    slurm_kwargs,
+    validate_aicr_slurm,
+)
 import subprocess
 import json
 import tempfile
@@ -37,15 +40,6 @@ _HYDRA_PARAMS = {
 
 
 # resolvers
-def _parse_gpu_count(gres: str) -> int:
-    # pattern: gpu:4
-    match = re.search(r"gpu:(\d+)", gres)
-    if match:
-        return int(match.group(1))
-    # add other patterns here
-    raise ValueError(f"Invalid gres: {gres}")
-
-
 def _ckpt_path_to_output_dir(ckpt_path: str) -> str:
     ckpt_path_ = Path(ckpt_path)
     # filename without extension
@@ -63,7 +57,7 @@ def _determine_trainer_strategy(ntasks_per_node: int, nodes: int) -> str:
     return "single_device"
 
 
-omegaconf.OmegaConf.register_new_resolver("parse_gpu_count", _parse_gpu_count)
+register_gpu_count_resolver()
 omegaconf.OmegaConf.register_new_resolver(
     "determine_trainer_strategy", _determine_trainer_strategy
 )
@@ -73,6 +67,7 @@ omegaconf.OmegaConf.register_new_resolver(
 
 
 def validate_config(cfg: DictConfig) -> None:
+    validate_aicr_slurm(cfg)
     if cfg.generate.trainer_strategy in ["ddp_multinode", "ddp"]:
         raise ValueError("generation is not supported for multi-node")
     if cfg.generate.devices > 1:
@@ -150,10 +145,7 @@ def main(cfg: DictConfig) -> None:
     output_dir = Path(cfg.paths.output_dir)
     # slurm_output_file = logs_dir / "%x.out"
     slurm_output_file = run_dir / "%x.out"
-    slurm_config = cast(
-        Dict, omegaconf.OmegaConf.to_container(cfg.slurm, resolve=True)
-    )
-    slurm_config["output"] = str(slurm_output_file)
+    slurm_config = slurm_kwargs(cfg, extra={"output": str(slurm_output_file)})
     # Configure SLURM settings from config
     slurm = Slurm(**slurm_config)
     # add job_name

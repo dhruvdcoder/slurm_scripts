@@ -15,13 +15,17 @@ if not found_secrets:
 
 import shlex
 import sys
-import re
-from typing import Dict, cast
 import hydra
 from omegaconf import DictConfig
 from simple_slurm import Slurm
 import omegaconf
-from common import get_experiment_string, remove_dms
+from common import (
+    get_experiment_string,
+    register_gpu_count_resolver,
+    remove_dms,
+    slurm_kwargs,
+    validate_aicr_slurm,
+)
 from hydra.core.plugins import Plugins
 
 
@@ -48,15 +52,6 @@ from searchpath_plugin import HydraCommonSearchPathPlugin
 Plugins.instance().register(HydraCommonSearchPathPlugin)
 
 # resolvers
-def _parse_gpu_count(gres: str) -> int:
-    # pattern: gpu:4
-    match = re.search(r"gpu:(\d+)", gres)
-    if match:
-        return int(match.group(1))
-    # add other patterns here
-    raise ValueError(f"Invalid gres: {gres}")
-
-
 def _determine_trainer_strategy(
     ntasks_per_node: int, nodes: int, hooks: bool = True
 ) -> str:
@@ -71,13 +66,14 @@ def _determine_trainer_strategy(
     return "single_device"
 
 
-omegaconf.OmegaConf.register_new_resolver("parse_gpu_count", _parse_gpu_count)
+register_gpu_count_resolver()
 omegaconf.OmegaConf.register_new_resolver(
     "determine_trainer_strategy", _determine_trainer_strategy
 )
 
 
 def validate_config(cfg: DictConfig) -> None:
+    validate_aicr_slurm(cfg)
     if cfg.train.debug is not None:
         # check the trainer_strategy, devices, num_nodes, precision, compile
         if cfg.train.trainer_strategy in ["ddp_multinode", "ddp"]:
@@ -98,10 +94,7 @@ def main(cfg: DictConfig) -> None:
     run_dir = Path(cfg.paths.run_dir)
     # slurm_output_file = logs_dir / "%x.out"
     slurm_output_file = run_dir / "%x.out"
-    slurm_config = cast(
-        Dict, omegaconf.OmegaConf.to_container(cfg.slurm, resolve=True)
-    )
-    slurm_config["output"] = str(slurm_output_file)
+    slurm_config = slurm_kwargs(cfg, extra={"output": str(slurm_output_file)})
     # Configure SLURM settings from config
     slurm = Slurm(**slurm_config)
     # add job_name

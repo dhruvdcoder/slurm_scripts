@@ -63,7 +63,7 @@ generate:
   precision: bf16-mixed
   job_type: generate
   num_nodes: ${slurm.nodes}
-  devices: ${parse_gpu_count:${slurm.gres}}
+  devices: ${parse_gpu_count:${oc.select:slurm.gpus,${oc.select:slurm.gpus_per_node,${slurm.gres}}}}
   trainer_strategy: ${determine_trainer_strategy:${slurm.ntasks_per_node},${slurm.nodes}}
 
 do: print # submit

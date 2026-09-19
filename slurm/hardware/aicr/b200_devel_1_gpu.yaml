@@ -1,0 +1,16 @@
+# @package _global_
+# AICR B200 devel, 1 GPU. Max 4 h.
+
+slurm:
+  nodes: 1
+  ntasks_per_node: 1
+  partition: b200-devel
+  gpus: 1
+  gres: null
+  constraint: null
+  qos: null
+  account: nar_umass
+  cpus_per_task: 4
+  mem: 16G
+  time: "01:00:00"
+  requeue: false

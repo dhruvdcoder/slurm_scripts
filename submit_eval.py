@@ -11,14 +11,17 @@ if not found_secrets:
 # fmt: on
 
 import shlex
-from typing import Dict
 from pathlib import Path
-from typing import cast
 import hydra
 from omegaconf import DictConfig
 from simple_slurm import Slurm
-import omegaconf
-from common import steal_args, remove_dms, get_experiment_string
+from common import (
+    get_experiment_string,
+    remove_dms,
+    slurm_kwargs,
+    steal_args,
+    validate_aicr_slurm,
+)
 from hydra.core.plugins import Plugins
 from searchpath_plugin import HydraCommonSearchPathPlugin
 
@@ -45,16 +48,14 @@ def main(cfg: DictConfig) -> None:
     """Main function to configure and submit SLURM job."""
     # Collect overrides for the inner script
 
+    validate_aicr_slurm(cfg)
     job_name = construct_job_name(cfg)
     cfg.job_name = job_name
     logs_dir = Path(cfg.paths.log_dir) / job_name
     run_dir = Path(cfg.paths.run_dir)
     # slurm_output_file = logs_dir / "%x.out"
     slurm_output_file = run_dir / "%x.out"
-    slurm_config = cast(
-        Dict, omegaconf.OmegaConf.to_container(cfg.slurm, resolve=True)
-    )
-    slurm_config["output"] = str(slurm_output_file)
+    slurm_config = slurm_kwargs(cfg, extra={"output": str(slurm_output_file)})
     # Configure SLURM settings from config
     slurm = Slurm(**slurm_config)
     # add job_name

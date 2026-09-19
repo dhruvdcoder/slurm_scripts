@@ -77,6 +77,30 @@ srun xlm job_name=star_easy_idlm job_type=train experiment=star_easy_idlm logger
 ### Example 2: Just print the sbatch script
 You can just print the sbatch script by changing `do=submit` to `do=print` in the command line.
 
+### Example 3: AICR (Massachusetts AI Compute Resource)
+
+Use an `aicr/*` hardware preset. These request `--gpus` / `--gpus-per-node` and `--account`, and they null out Unity-only keys (`gres`, `constraint`, `qos`). Submit from an activated env on an AICR login node.
+
+```bash
+python lib/slurm_scripts/submit_train.py \
+  do=print \
+  hardware=aicr/rtx_batch_1_gpu \
+  job_name=simple_ilm_stage_1_star_hard \
+  train.experiment=star_hard_simple_ilm_stage_1 \
+  slurm.time=24:00:00
+```
+
+Expected headers include `--partition rtx-batch`, `--gpus 1`, `--account nar_umass`, and no `--gres` / `--constraint` / `--qos`.
+
+Presets:
+
+- `aicr/rtx_devel_1_gpu`, `aicr/b200_devel_1_gpu` — interactive / short test (devel, 1 h default, 4 h max)
+- `aicr/rtx_batch_1_gpu`, `aicr/b200_batch_1_gpu` — 1 GPU (8 h default, 24 h max)
+- `aicr/rtx_batch_4_gpu`, `aicr/b200_batch_4_gpu` — 4 GPU / node
+- `aicr/rtx_batch_8_gpu`, `aicr/b200_batch_8_gpu` — 8 GPU / node
+
+Override wall time on the CLI (`slurm.time=24:00:00`) when a run needs the batch max.
+
 ## Evaluation
 
 The base config is `slurm/eval_sbatch.yaml` with `eval.` and `slurm.` sections. Arguments after `---` are passed to the inner `xlm job_type=eval` command.

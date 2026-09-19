@@ -14,14 +14,13 @@ if not found_secrets:
 
 import re
 import shlex
-from typing import Dict, List, Tuple, cast
+from typing import List, Tuple
 
 import hydra
-import omegaconf
 from omegaconf import DictConfig
 from simple_slurm import Slurm
 
-from common import get_experiment_string, steal_args
+from common import get_experiment_string, slurm_kwargs, steal_args, validate_aicr_slurm
 from hydra.core.plugins import Plugins
 from searchpath_plugin import HydraCommonSearchPathPlugin
 
@@ -128,15 +127,13 @@ def main(cfg: DictConfig) -> None:
             "Check filename_pattern, checkpoint_glob, and include_special_named."
         )
 
+    validate_aicr_slurm(cfg)
     job_name_base = str(cfg.job_name)
     cfg.job_name = job_name_base
 
     run_dir = Path(cfg.paths.run_dir)
     slurm_output_file = run_dir / "%x.out"
-    slurm_config = cast(
-        Dict, omegaconf.OmegaConf.to_container(cfg.slurm, resolve=True)
-    )
-    slurm_config["output"] = str(slurm_output_file)
+    slurm_config = slurm_kwargs(cfg, extra={"output": str(slurm_output_file)})
     slurm = Slurm(**slurm_config)
 
     for key, value in cfg.env.items():

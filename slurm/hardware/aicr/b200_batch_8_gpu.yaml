@@ -1,0 +1,16 @@
+# @package _global_
+# AICR B200 batch, full node (8 GPU). Max 24 h.
+
+slurm:
+  nodes: 1
+  ntasks_per_node: 8
+  partition: b200-batch
+  gpus_per_node: 8
+  gres: null
+  constraint: null
+  qos: null
+  account: nar_umass
+  cpus_per_task: 32
+  mem: 128G
+  time: "12:00:00"
+  requeue: false

@@ -62,7 +62,7 @@ will generate the following sbatch script. If you have not made changes to the d
 #SBATCH --ntasks-per-node     1
 #SBATCH --open-mode           append
 #SBATCH --output              logs/star_easy_idlm/sbatch/2026-02-22_12-45-01/%x.out
-#SBATCH --partition           gpu,gpu-preempt,superpod-a100
+#SBATCH --partition           gpu-highvram,gpu-preempt-highvram,superpod-a100
 #SBATCH --requeue             
 #SBATCH --time                1-00:00:00
 
@@ -90,7 +90,7 @@ python lib/slurm_scripts/submit_eval.py \
   "job_name=sudoku_extreme_mlm_eval_top_prob_0.5" \
   "experiment=sudoku_extreme_mlm" \
   "slurm.constraint=vram80" \
-  "slurm.partition=\"gpu,gpu-preempt,superpod-a100\"" \
+  "slurm.partition=\"gpu-highvram,gpu-preempt-highvram,superpod-a100\"" \
   "eval.split=validation" \
   "eval.dms_to_remove=[val.lm]" \
   "eval.checkpoint_path=logs/sudoku_extreme_mlm/checkpoints/10-80000.ckpt" \

@@ -26,7 +26,7 @@ slurm:
   nodes: 1
   mem: 20GB
   time: "2-00:00:00"
-  partition: gpu
+  partition: gpu-highvram
   constraint: vram40,bf16
   ntasks_per_node: 1 
   cpus_per_task: 5

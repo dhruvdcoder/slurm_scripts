@@ -28,7 +28,7 @@ slurm:
   nodes: 1
   mem: 20GB
   time: "20:00:00"
-  partition: gpu,superpod-a100
+  partition: gpu-highvram,superpod-a100
   constraint: vram40,bf16
   ntasks_per_node: 1 # TODO change default
   cpus_per_task: 5

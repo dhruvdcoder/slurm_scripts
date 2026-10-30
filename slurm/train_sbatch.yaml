@@ -27,7 +27,8 @@ slurm:
   nodes: 1
   mem: 20GB
   time: "20:00:00"
-  partition: gpu
+  # vram40 lives on gpu-highvram; the plain gpu partition is under 40GB.
+  partition: gpu-highvram
   constraint: vram40,bf16
   ntasks_per_node: 1 
   cpus_per_task: 5
